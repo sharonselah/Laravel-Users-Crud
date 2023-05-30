@@ -6,6 +6,8 @@ use App\Models\User;
 
 use Illuminate\Http\Request;
 
+use Illuminate\Support\Facades\Hash;
+
 class UserController extends Controller
 {
     /**
@@ -22,6 +24,7 @@ class UserController extends Controller
         return view('users.index', compact('users'));
     }
 
+
     /**
      * Show the form for creating a new resource.
      *
@@ -29,7 +32,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view ('users.create');
     }
 
     /**
@@ -40,7 +43,17 @@ class UserController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validatedUser = $request->validate([
+            'name'     =>  'required',
+            'email'    =>  'required|email|unique:users',
+            'password' =>  'required|min:8',
+        ]);
+
+        $validatedUser['password'] = Hash::make($validatedUser['password']);
+
+        User::create($validatedUser);
+
+        return redirect ()->route('users.index');
     }
 
     /**
@@ -62,7 +75,8 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id);
+        return view('users.edit', compact('user'));
     }
 
     /**
@@ -74,7 +88,15 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $validatedUser = $request -> validate([
+            'name' => 'required',
+            'email'=> 'required|email',
+        ]);
+
+        $user = User::find($id);
+        $user->update($validatedUser);
+
+        return redirect()->route('users.index');
     }
 
     /**
@@ -85,6 +107,10 @@ class UserController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $user = User::find($id);
+        $user->delete();
+
+        return redirect ()-> route('users.index'); 
+
     }
 }
